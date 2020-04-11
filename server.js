@@ -16,7 +16,7 @@ mysqlx.getSession({
     connection = c;
     connection.sql('USE plansforyou;').execute();
 })
-.catch(function(err) {
+.catch(function(err) { 
     console.error("Error connecting: " + err.stack);
 });
 
@@ -38,6 +38,9 @@ app.use(function(req, res, next) {
   next();
 });
 
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
+
 app.get('/', (req, res) => res.send('Hello World!'));
 
 // Friends endpoints //
@@ -55,6 +58,52 @@ app.route('/friend/:friendId').get(function(req, res, next) {
     const q = 'CALL get_friend(' + req.params.friendId + ');';
     return connection.sql(q).execute().then(result => {
         res.json(result.fetchAll()[0][0]);
+    });
+});
+
+// Create friend
+app.route('/friend').post(function(req, res, next) {
+    let friend = req.body;
+    try {
+        return Promise.all([
+            connection.sql('SET @first_name = ?;').bind(friend.first_name).execute(),
+            connection.sql('SET @last_name = ?;').bind(friend.last_name).execute(),
+            connection.sql('SET @phone_number = ?;').bind(friend.phone_number).execute(),
+            connection.sql('SET @friend_photo = ?;').bind(friend.friend_photo).execute(),
+            connection.sql('CALL create_friend(@first_name, @last_name, @phone_number, @friend_photo);').execute(function(result) {
+                res.json(result[0][0]);
+            })
+        ]);
+    } catch (err) {
+        console.error(err);
+    }
+});
+
+// Update friend
+app.route('/friend/:friendId').put(function(req, res, next) {
+    let friend = req.body;
+    let friendId = req.params.friendId;
+    try {
+        return Promise.all([
+            connection.sql('SET @friend_id = ?;').bind(friendId).execute(),
+            connection.sql('SET @first_name = ?;').bind(friend.first_name).execute(),
+            connection.sql('SET @last_name = ?;').bind(friend.last_name).execute(),
+            connection.sql('SET @phone_number = ?;').bind(friend.phone_number).execute(),
+            connection.sql('SET @friend_photo = ?;').bind(friend.friend_photo).execute(),
+            connection.sql('CALL update_friend(@friend_id, @first_name, @last_name, @phone_number, @friend_photo);').execute(function(result) {
+                res.json(result[0][0]);
+            })
+        ]);
+    } catch (err) {
+        console.error(err);
+    }
+});
+
+// Delete friend
+app.route('/friend/:friendId').delete(function(req, res, next) {
+    const q = 'CALL delete_friend(' + req.params.friendId + ');';
+    return connection.sql(q).execute().then(result => {
+        res.json('Successfully deleted friend ' + req.params.friendId);
     });
 });
 
@@ -87,12 +136,130 @@ app.route('/plan/:planId').get(function(req, res, next) {
 });
 
 // Get plans friend is attending
-app.route('plan/:friendId').get(function(req, res, next) {
+app.route('/plan/:friendId').get(function(req, res, next) {
     const q = 'CALL friend_rsvps(' + req.params.friendId + ');';
     return connection.sql(q).execute().then(result => {
         res.json(result.fetchAll()[0][0]);
     });
-})
+});
+
+// Create plan
+app.route('/plan').post(function(req, res, next) {
+    let plan = req.body;
+    try {
+        return Promise.all([
+            connection.sql('SET @title = ?;').bind(plan.title).execute(),
+            connection.sql('SET @description_text = ?;').bind(plan.description_text).execute(),
+            connection.sql('SET @plan_photo = ?;').bind(plan.plan_photo).execute(),
+            connection.sql('SET @start_time = ?;').bind(plan.start_time).execute(),
+            connection.sql('SET @end_time = ?;').bind(plan.end_time).execute(),
+            connection.sql('SET @host_id = ?;').bind(plan.host_id).execute(),
+            connection.sql('CALL create_plan(@title, @description_text, @plan_photo, @start_time, @end_time, @host_id);')
+                .execute(function(result) {
+                    res.json(result[0][0]);
+            })
+        ]);
+    } catch (err) {
+        console.error(err);
+    }
+});
+
+// Update plan
+app.route('/plan/:planId').put(function(req, res, next) {
+    let planId = req.params.planId;
+    let plan = req.body;
+    try {
+        return Promise.all([
+            connection.sql('SET @plan_id = ?;').bind(planId).execute(),
+            connection.sql('SET @title = ?;').bind(plan.title).execute(),
+            connection.sql('SET @description_text = ?;').bind(plan.description_text).execute(),
+            connection.sql('SET @plan_photo = ?;').bind(plan.plan_photo).execute(),
+            connection.sql('SET @start_time = ?;').bind(plan.start_time).execute(),
+            connection.sql('SET @end_time = ?;').bind(plan.end_time).execute(),
+            connection.sql('SET @host_id = ?;').bind(plan.host_id).execute(),
+            connection.sql('CALL update_plan(@plan_id, @title, @description_text, @plan_photo, @start_time, @end_time, @host_id);')
+                .execute(function(result) {
+                    res.json(result[0][0]);
+            })
+        ]);
+    } catch (err) {
+        console.error(err);
+    }
+});
+
+// Delete plan
+app.route('/plan/:planId').delete(function(req, res, next) {
+    const q = 'CALL delete_plan(' + req.params.planId + ');';
+    return connection.sql(q).execute().then(result => {
+        res.json('Successfully deleted plan ' + req.params.planId);
+    });
+});
+
+// RSVP endpoints //
+
+// Create (or update) RSVP
+app.route('/rsvp/:friendId/:planId').post(function(req, res, next) {
+    const friendId = req.params.friendId;
+    const planId = req.params.planId;
+    let rsvp = req.body;
+    try {
+        return Promise.all([
+            connection.sql('SET @friend_id = ?;').bind(friendId).execute(),
+            connection.sql('SET @plan_id = ?;').bind(planId).execute(),
+            connection.sql('SET @rsvp_status = ?;').bind(rsvp.rsvp_status).execute(),
+            connection.sql('CALL update_rsvp(@friend_id, @plan_id, @rsvp_status);')
+                .execute(function(result) {
+                    res.json(result[0][0]);
+            })
+        ]);
+    } catch (err) {
+        console.error(err);
+    }
+});
+
+// Comment endpoints //
+
+// Create comment
+app.route('/comment').post(function(req, res, next) {
+    let comment = req.body;
+    try {
+        return Promise.all([
+            connection.sql('SET @friend_id = ?;').bind(comment.friend_id).execute(),
+            connection.sql('SET @plan_id = ?;').bind(comment.plan_id).execute(),
+            connection.sql('SET @comment_text = ?;').bind(comment.comment_text).execute(),
+            connection.sql('CALL create_comment(@friend_id, @plan_id, @comment_text);').execute(function(result) {
+                res.json(result[0][0]);
+            })
+        ]);
+    } catch (err) {
+        console.error(err);
+    }
+});
+
+// Update comment
+app.route('/comment/:commentId').put(function(req, res, next) {
+    let comment = req.body;
+    let commentId = req.params.commentId;
+    try {
+        return Promise.all([
+            connection.sql('SET @comment_id = ?;').bind(commentId).execute(),
+            connection.sql('SET @comment_text = ?;').bind(comment.comment_text).execute(),
+            connection.sql('CALL update_comment(@comment_id, @comment_text);').execute(function(result) {
+                res.json(result[0][0]);
+            })
+        ]);
+    } catch (err) {
+        console.error(err);
+    }
+});
+
+// Delete comment
+app.route('/comment/:commentId').delete(function(req, res, next) {
+    const q = 'CALL delete_comment(' + req.params.commentId + ');';
+    return connection.sql(q).execute().then(result => {
+        res.json('Successfully deleted comment ' + req.params.commentId);
+    });
+});
 
 // Availability endpoints //
 
@@ -102,15 +269,58 @@ app.route('/availabilities').get(function(req, res, next) {
     return connection.sql(q).execute().then(result => {
         res.json(result.fetchAll()[0][0]);
     });
-})
+});
 
 // Get friend availability
 app.route('/availability/:friendId').get(function(req, res, next) {
-    const q = 'CALL get_availability(' + req.params.friendId + ');';
+    const q = 'CALL get_friend_availability(' + req.params.friendId + ');';
     return connection.sql(q).execute().then(result => {
         res.json(result.fetchAll()[0][0]);
     });
-})
+});
+
+// Create availability
+app.route('/availability').post(function(req, res, next) {
+    let availability = req.body;
+    try {
+        return Promise.all([
+            connection.sql('SET @start_time = ?;').bind(availability.start_time).execute(),
+            connection.sql('SET @end_time = ?;').bind(availability.end_time).execute(),
+            connection.sql('SET @friend_id = ?;').bind(availability.friend_id).execute(),
+            connection.sql('CALL create_availability(@start_time, @end_time, @friend_id);').execute(function(result) {
+                res.json(result[0][0]);
+            })
+        ]);
+    } catch (err) {
+        console.error(err);
+    }
+});
+
+// Update availability
+app.route('/availability/:availabilityId').put(function(req, res, next) {
+    let availability = req.body;
+    let availabilityId = req.params.availabilityId;
+    try {
+        return Promise.all([
+            connection.sql('SET @availability_id = ?;').bind(availabilityId).execute(),
+            connection.sql('SET @start_time = ?;').bind(availability.start_time).execute(),
+            connection.sql('SET @end_time = ?;').bind(availability.end_time).execute(),
+            connection.sql('CALL update_availability(@availability_id, @start_time, @end_time);').execute(function(result) {
+                res.json(result[0][0]);
+            })
+        ]);
+    } catch (err) {
+        console.error(err);
+    }
+});
+
+// Delete comment
+app.route('/availability/:availabilityId').delete(function(req, res, next) {
+    const q = 'CALL delete_availability(' + req.params.availabilityId + ');';
+    return connection.sql(q).execute().then(result => {
+        res.json('Successfully deleted availability ' + req.params.availabilityId);
+    });
+});
 
 app.get('/status', (req, res) => res.send('Working!'));
 
