@@ -9,7 +9,7 @@ const PlanCardWrapper = styled.div`
 `;
 
 const PlanCard = props => {
-  const { plan } = props;
+  const { plan, user_id } = props;
   const { title, host_name, start_time, end_time, plan_id } = plan;
   const formatted_start = moment(start_time).format(formatString);
   const duration = moment.duration(moment(end_time) - moment(start_time)).humanize();
