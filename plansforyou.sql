@@ -73,21 +73,16 @@ INSERT INTO plan_comment (friend_id, plan_id, comment_text) VALUES(1, 1, 'Not su
 
 -- FRIEND PROCEDURES --
 
--- Create friend (friend values)
-DROP PROCEDURE IF EXISTS create_friend;
+-- Get all friends
+DROP PROCEDURE IF EXISTS get_friends;
 DELIMITER //
-CREATE PROCEDURE create_friend(first_name varchar(45), last_name varchar(45), phone_number varchar(10), friend_photo varchar(280))
+CREATE PROCEDURE get_friends()
 	BEGIN
-		IF friend_photo is NULL
-        THEN
-			INSERT INTO friend (first_name, last_name, phone_number) VALUES(first_name, last_name, phone_number);
-		ELSE 
-			INSERT INTO friend (first_name, last_name, phone_number, friend_photo) VALUES(first_name, last_name, phone_number, friend_photo);
-		END IF;
-    END //
+		SELECT JSON_ARRAYAGG(JSON_OBJECT("friend_id", friend_id, "friend_photo", friend_photo, "first_name", first_name, 
+			"last_name", last_name, "phone_number", phone_number)) FROM friend;
+	END //
     
 DELIMITER ;
-CALL create_friend('Billie', 'Weisiger', '8003278937', NULL);
 
 -- Get friend (friend_id)
 DROP PROCEDURE IF EXISTS get_friend;
@@ -99,19 +94,22 @@ CREATE PROCEDURE get_friend(friend_id_param int)
 	END //
     
 DELIMITER ;
-CALL get_friend(4);
 
--- Get all friends
-DROP PROCEDURE IF EXISTS get_friends;
+-- Create friend (friend values)
+DROP PROCEDURE IF EXISTS create_friend;
 DELIMITER //
-CREATE PROCEDURE get_friends()
+CREATE PROCEDURE create_friend(first_name varchar(45), last_name varchar(45), phone_number varchar(10), friend_photo varchar(280))
 	BEGIN
-		SELECT JSON_ARRAYAGG(JSON_OBJECT("friend_id", friend_id, "friend_photo", friend_photo, "first_name", first_name, 
-			"last_name", last_name, "phone_number", phone_number)) FROM friend;
-	END //
+		IF friend_photo is NULL
+        THEN
+			INSERT INTO friend (first_name, last_name, phone_number) VALUES(first_name, last_name, phone_number);
+		ELSE 
+			INSERT INTO friend (first_name, last_name, phone_number, friend_photo) VALUES(first_name, last_name, phone_number, friend_photo);
+		END IF;
+        CALL get_friend(last_insert_id());
+    END //
     
 DELIMITER ;
-CALL get_friends();
 
 -- Update friend (friend_id, new values)
 DROP PROCEDURE IF EXISTS update_friend;
@@ -121,10 +119,10 @@ CREATE PROCEDURE update_friend(friend_id_param int, first_name varchar(45), last
 		UPDATE friend
 			SET first_name = first_name, last_name = last_name, phone_number = phone_number, friend_photo = friend_photo
 			WHERE friend_id = friend_id_param;
+		CALL get_friend(friend_id_param);
     END //
     
 DELIMITER ;
-CALL update_friend(3, 'Frankie', 'Muniz', '8005882300', 'https://m.media-amazon.com/images/M/MV5BMTkxNTU1Njk5MV5BMl5BanBnXkFtZTcwODUzNjQ0Nw@@._V1_.jpg');
 
 -- Delete friend (friend_id)
 DROP PROCEDURE IF EXISTS delete_friend;
@@ -136,8 +134,41 @@ CREATE PROCEDURE delete_friend(friend_id_param int)
 
 DELIMITER ;
 
-
 -- PLAN PROCEDURES --
+
+-- Get all plans
+DROP PROCEDURE IF EXISTS get_plans;
+DELIMITER //
+CREATE PROCEDURE get_plans()
+	BEGIN
+		SELECT JSON_ARRAYAGG(JSON_OBJECT("plan_id", plan_id, "title", title, "plan_photo", plan_photo, "start_time", start_time, 
+			"end_time", end_time, "host_id", host_id, "friend_photo", friend_photo, "first_name", first_name)) FROM plan JOIN friend ON host_id = friend_id;
+	END //
+DELIMITER ;
+
+-- Get plan (plan_id)
+DROP PROCEDURE IF EXISTS get_plan;
+DELIMITER //
+CREATE PROCEDURE get_plan(plan_id_param int)
+	BEGIN
+		SELECT JSON_ARRAYAGG(JSON_OBJECT("plan_id", plan_id, "title", title, "description_text", description_text, "plan_photo", plan_photo, "start_time", start_time, 
+			"end_time", end_time, "host_id", host_id, "friend_photo", friend_photo, "first_name", first_name, "last_name", last_name)) 
+            FROM plan JOIN friend ON host_id = friend_id
+            WHERE plan_id = plan_id_param;
+    END //
+    
+DELIMITER ;
+
+-- Get all plans a friend is going to to may be going to (friend_id)
+DROP PROCEDURE IF EXISTS friend_rsvps;
+DELIMITER //
+CREATE PROCEDURE friend_rsvps(friend_id_param int)
+	BEGIN
+		SELECT JSON_ARRAYAGG(JSON_OBJECT("rsvp_status", rsvp_status, "title", title, "plan_photo", plan_photo, "start_time", start_time, 
+        "end_time", end_time)) FROM rsvp JOIN plan USING(plan_id) WHERE friend_id = friend_id_param AND NOT rsvp_status = 'not going';
+	END //
+    
+DELIMITER ;
 
 -- Create plan (plan values)
 DROP PROCEDURE IF EXISTS create_plan;
@@ -150,46 +181,9 @@ CREATE PROCEDURE create_plan(title varchar(45), description_text varchar(280), p
 		ELSE
 			INSERT INTO plan (title, description_text, plan_photo, start_time, end_time, host_id) VALUES(title, description_text, plan_photo, start_time, end_time, host_id);
 		END IF;
+        CALL get_plan(last_insert_id());
 	END //
 DELIMITER ;
-CALL create_plan('Club Penguin Hangout', 'We should all go onto Club Penguin and hang out', NULL, '2020-04-25 18:00:00', '2020-04-25 20:00:00', 4);
-
--- Get plan (plan_id)
-DROP PROCEDURE IF EXISTS get_plan;
-DELIMITER //
-CREATE PROCEDURE get_plan(plan_id_param int)
-	BEGIN
-		SELECT JSON_ARRAYAGG(JSON_OBJECT("plan_id", plan_id, "title", title, "plan_photo", plan_photo, "start_time", start_time, 
-			"end_time", end_time, "host_id", host_id, "friend_photo", friend_photo, "first_name", first_name, "last_name", last_name)) 
-            FROM plan JOIN friend ON host_id = friend_id
-            WHERE plan_id = plan_id_param;
-    END //
-    
-DELIMITER ;
-CALL get_plan(1);
-
--- Get all plans
-DROP PROCEDURE IF EXISTS get_plans;
-DELIMITER //
-CREATE PROCEDURE get_plans()
-	BEGIN
-		SELECT JSON_ARRAYAGG(JSON_OBJECT("plan_id", plan_id, "title", title, "plan_photo", plan_photo, "start_time", start_time, 
-			"end_time", end_time, "host_id", host_id, "friend_photo", friend_photo, "first_name", first_name)) FROM plan JOIN friend ON host_id = friend_id;
-	END //
-DELIMITER ;
-CALL get_plans();
-
--- Get all plans a friend is going to to may be going to (friend_id)
-DROP PROCEDURE IF EXISTS friend_rsvps;
-DELIMITER //
-CREATE PROCEDURE friend_rsvps(friend_id_param int)
-	BEGIN
-		SELECT JSON_ARRAYAGG(JSON_OBJECT("rsvp_status", rsvp_status, "title", title, "plan_photo", plan_photo, "start_time", start_time, 
-        "end_time", end_time)) FROM rsvp JOIN plan USING(plan_id) WHERE friend_id = friend_id_param AND NOT rsvp_status = 'not going';
-	END //
-    
-DELIMITER ;
-CALL friend_rsvps(1);
 
 -- Update plan (plan_id, new plan values)
 DROP PROCEDURE IF EXISTS update_plan;
@@ -199,10 +193,10 @@ CREATE PROCEDURE update_plan(plan_id_param int, title varchar(45), description_t
 		UPDATE plan
 			SET title = title, description_text = description_text, plan_photo = plan_photo, start_time = start_time, end_time = end_time, host_id = host_id
 			WHERE plan_id = plan_id_param;
+		CALL get_plan(plan_id_param);
 	END //
     
 DELIMITER ;
-CALL update_plan(4, 'Club Penguin', 'We should all log onto Club Penguin and hang out', 'https://www.artconnect.com/assets/default/default_event_list-af5a65d1bb7f64798e5dd5b6e3e3d091.png', '2020-04-25 18:00:00', '2020-04-25 20:00:00', 4);
 
 -- Delete plan (plan_id)
 DROP PROCEDURE IF EXISTS delete_plan;
@@ -217,6 +211,18 @@ DELIMITER ;
 
 -- RSVP PROCEDURES --
 
+-- Get RSVP (friend_id, plan_id)
+DROP PROCEDURE IF EXISTS get_rsvp;
+DELIMITER //
+CREATE PROCEDURE get_rsvp(friend_id_param int, plan_id_param int)
+	BEGIN
+		SELECT JSON_ARRAYAGG(JSON_OBJECT("friend_id", friend_id, "plan_id", plan_id, "rsvp_status", rsvp_status)) 
+            FROM rsvp
+            WHERE friend_id = friend_id_param AND plan_id = plan_id_param;
+    END //
+    
+DELIMITER ;
+
 -- Create or Update RSVP to a plan (friend_id, plan_id, rsvp_status)
 DROP PROCEDURE IF EXISTS update_rsvp;
 DELIMITER //
@@ -230,10 +236,10 @@ CREATE PROCEDURE update_rsvp(friend_id_param int, plan_id_param int, rsvp_status
 		ELSE
 			INSERT INTO rsvp VALUES (friend_id_param, plan_id_param, rsvp_status_param);
 		END IF;
+        CALL get_rsvp(friend_id_param, plan_id_param);
     END //
     
 DELIMITER ;
-CALL update_rsvp(1, 1, 'maybe'); 
 
 -- Automatically make host RSVP 'going' to plan
  DROP TRIGGER IF EXISTS host_rsvp;
@@ -255,10 +261,21 @@ CREATE PROCEDURE plan_rsvps(plan_id_param int)
 	END //
     
 DELIMITER ;
-CALL plan_rsvps(4);
 
 
 -- COMMENT PROCEDURES -- 
+
+-- Get comment (comment_id)
+DROP PROCEDURE IF EXISTS get_comment;
+DELIMITER //
+CREATE PROCEDURE get_comment(comment_id_param int)
+	BEGIN
+		SELECT JSON_ARRAYAGG(JSON_OBJECT("comment_id", comment_id, "friend_id", friend_id, "plan_id", plan_id, "comment_text", comment_text)) 
+            FROM plan_comment
+            WHERE comment_id = comment_id_param;
+    END //
+    
+DELIMITER ;
 
 -- Create comment (comment values)
 DROP PROCEDURE IF EXISTS create_comment;
@@ -266,10 +283,10 @@ DELIMITER //
 CREATE PROCEDURE create_comment(friend_id_param int, plan_id_param int, comment_text varchar(140))
 	BEGIN
 		INSERT INTO plan_comment (friend_id, plan_id, comment_text) VALUES(friend_id_param, plan_id_param, comment_text);
+        CALL get_comment(last_insert_id());
 	END //
 
 DELIMITER ;
-CALL create_comment(2, 4, 'I hope I still have an account lol');
 
 -- Get comments for a plan (plan_id)
 DROP PROCEDURE IF EXISTS plan_comments;
@@ -282,9 +299,8 @@ CREATE PROCEDURE plan_comments(plan_id_param int)
 	END //
     
 DELIMITER ;
-CALL plan_comments(1);
 
--- Update comment (comment_id, new comment values)
+-- Update comment (comment_id, new comment text)
 DROP PROCEDURE IF EXISTS update_comment;
 DELIMITER //
 CREATE PROCEDURE update_comment(comment_id_param int, comment_text varchar(140))
@@ -292,17 +308,17 @@ CREATE PROCEDURE update_comment(comment_id_param int, comment_text varchar(140))
 		UPDATE plan_comment
 			SET comment_text = comment_text
             WHERE comment_id = comment_id_param;
+		CALL get_comment(comment_id_param);
 	END //
 
 DELIMITER ;
-CALL update_comment(4, 'Thank god I still have my account');
 
 -- Delete comment (comment_id)
 DROP PROCEDURE IF EXISTS delete_comment;
 DELIMITER //
 CREATE PROCEDURE delete_comment(comment_id_param int)
 	BEGIN
-		DELETE FROM plan_comment WHERE commend_id = comment_id_param;
+		DELETE FROM plan_comment WHERE comment_id = comment_id_param;
 	END //
 
 DELIMITER ;
@@ -310,21 +326,21 @@ DELIMITER ;
 
 -- AVAILABILITY PROCEDURES --
 
--- Create availability (availability values)
-DROP PROCEDURE IF EXISTS create_availability;
+-- Get availability
+DROP PROCEDURE IF EXISTS get_availability;
 DELIMITER //
-CREATE PROCEDURE create_availability(start_time datetime, end_time datetime, friend_id int)
+CREATE PROCEDURE get_availability(availability_id_param int)
 	BEGIN
-		INSERT INTO availability (start_time, end_time, friend_id) VALUES(start_time, end_time, friend_id);
+		SELECT JSON_ARRAYAGG(JSON_OBJECT("availability_id", availability_id, "start_time", start_time, "end_time", end_time, "friend_id", friend_id))
+            FROM availability WHERE availability_id = availability_id_param;
 	END //
     
 DELIMITER ;
-CALL create_availability('2020-04-25 18:00:00', '2020-04-25 23:59:00', 4);
 
 -- Get availability for user (friend_id)
-DROP PROCEDURE IF EXISTS get_availability;
+DROP PROCEDURE IF EXISTS get_friend_availability;
 DELIMITER //
-CREATE PROCEDURE get_availability(friend_id_param int)
+CREATE PROCEDURE get_friend_availability(friend_id_param int)
 	BEGIN
 		SELECT JSON_ARRAYAGG(JSON_OBJECT("availability_id", availability_id, "start_time", start_time, "end_time", end_time,
 			"friend_id", friend_id, "first_name", first_name, "friend_photo", friend_photo))
@@ -332,7 +348,6 @@ CREATE PROCEDURE get_availability(friend_id_param int)
 	END //
     
 DELIMITER ;
-CALL get_availability(4);
 
 -- Get all availabilities
 DROP PROCEDURE IF EXISTS get_availabilities;
@@ -344,7 +359,17 @@ CREATE PROCEDURE get_availabilities()
 	END //
     
 DELIMITER ;
-CALL get_availabilities();
+
+-- Create availability (availability values)
+DROP PROCEDURE IF EXISTS create_availability;
+DELIMITER //
+CREATE PROCEDURE create_availability(start_time datetime, end_time datetime, friend_id int)
+	BEGIN
+		INSERT INTO availability (start_time, end_time, friend_id) VALUES(start_time, end_time, friend_id);
+        CALL get_availability(last_insert_id());
+	END //
+    
+DELIMITER ;
 
 -- Update availability (availability_id, new availability values)
 DROP PROCEDURE IF EXISTS update_availability;
@@ -354,10 +379,10 @@ CREATE PROCEDURE update_availability(availability_id_param int, start_time datet
 		UPDATE availability
 			SET start_time = start_time, end_time = end_time
             WHERE availability_id = availability_id_param;
+		CALL get_availability(availability_id_param);
 	END //
 
 DELIMITER ;
-CALL update_availability(15, '2020-04-25 17:00:00', '2020-04-25 23:59:00');
 
 -- Delete availability (availability_id)
 DROP PROCEDURE IF EXISTS delete_availability;
