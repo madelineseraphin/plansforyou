@@ -15,10 +15,11 @@ const PlanCard = props => {
   const duration = moment.duration(moment(end_time) - moment(start_time)).humanize();
   return (
     <PlanCardWrapper>
-      <p>{title}</p>
+      <p><strong>{title}</strong></p>
       <p>{host_name}</p>
       <p>When: {formatted_start}</p>
       <p>Lasts {duration}</p>
+      <a href={`/plans/${plan_id}`}>View plan</a>
     </PlanCardWrapper>
   );
 };

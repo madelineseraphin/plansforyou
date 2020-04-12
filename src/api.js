@@ -5,7 +5,9 @@ const baseUrl = 'http://localhost:8000';
 export default {
   plans() {
     return {
+      // used
       getOne: (id) => axios.get(`${baseUrl}/plan/${id}`),
+      // used
       getAll: () => axios.get(`${baseUrl}/plans`),
       getForFriend: (friendId) => axios.get(`${baseUrl}/plans/${friendId}`),
       create: (toCreate) => axios.post(`${baseUrl}/plan`, toCreate),
@@ -24,12 +26,14 @@ export default {
   },
   rsvps() {
     return {
+      // used
       upsert: (friendId, planId, toUpsert) =>
         axios.post(`${baseUrl}/rsvp/${friendId}/${planId}`, toUpsert),
     };
   },
   comments() {
     return {
+      // used
       create: (toCreate) => axios.post(`${baseUrl}/comment`, toCreate),
       update: (commentId, toCreate) =>
         axios.put(`${baseUrl}/comment/${commentId}`, toCreate),

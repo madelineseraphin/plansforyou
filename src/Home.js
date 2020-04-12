@@ -3,12 +3,6 @@ import styled from "styled-components";
 import PlanCard from "./components/PlanCard"
 import api from './api'
 
-export const PageBody = styled.div`
-  width: 1100px;
-  margin-left: auto;
-  margin-right: auto;
-`;
-
 const Home = () => {
   const user_id = 1;
   const [plans, setPlans] = useState([]);
@@ -26,11 +20,11 @@ const Home = () => {
   console.log(plans)
   const Plans = plans.map((plan) => <PlanCard plan={plan} user_id={user_id} />);
   return (
-    <PageBody>
+    <>
       <h1>All plans</h1>
       {Plans}
       <h1>My Availabilities</h1>
-    </PageBody>
+    </>
   );
 }
 
