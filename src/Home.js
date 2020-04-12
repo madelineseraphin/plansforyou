@@ -17,8 +17,9 @@ const Home = () => {
       end_date: '2020-04-24 22:00:00'
     }
   ]
-  console.log(plans)
+
   const Plans = plans.map((plan) => <PlanCard plan={plan} user_id={user_id} />);
+  
   return (
     <>
       <h1>All plans</h1>

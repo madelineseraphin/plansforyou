@@ -10,8 +10,11 @@ export default {
       // used
       getAll: () => axios.get(`${baseUrl}/plans`),
       getForFriend: (friendId) => axios.get(`${baseUrl}/plans/${friendId}`),
+      // used
       create: (toCreate) => axios.post(`${baseUrl}/plan`, toCreate),
+      // used
       update: (toUpdate, id) => axios.put(`${baseUrl}/plan/${id}`, toUpdate),
+      // used
       delete: (id) => axios.delete(`${baseUrl}/plan/${id}`),
     };
   },
@@ -35,8 +38,10 @@ export default {
     return {
       // used
       create: (toCreate) => axios.post(`${baseUrl}/comment`, toCreate),
+      // used
       update: (commentId, toCreate) =>
         axios.put(`${baseUrl}/comment/${commentId}`, toCreate),
+      // used
       delete: (id) => axios.delete(`${baseUrl}/comment/${id}`),
     };
   },

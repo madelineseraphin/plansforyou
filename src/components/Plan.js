@@ -23,16 +23,32 @@ const RSVP = (props) => {
 };
 
 const Comment = (props) => {
-  const { first_name, last_name, text, id } = props;
+  const { first_name, last_name, text, id, friend_id, user_id } = props;
+  const myComment = friend_id === user_id;
+  const [comment, setComment] = useState(text);
+  const [edit, setEdit] = useState(false);
   return (
     <div key={id}>
       <p>
         <strong>{first_name} {last_name}</strong>
       </p>
-      <p>
-        {text}
-      </p>
-    </div>
+      {edit ?
+        <>
+          <input type="text" value={comment} onChange={(e) => setComment(e.target.value)} />
+          <button onClick={() => api.comments().update(id, { comment_text: comment }).then(setEdit(false))}>Save</button>
+          <button onClick={() => setEdit(false)}>Cancel</button>
+        </>
+        :
+        <p>
+          {text}
+        </p>
+      }
+      {myComment && !edit &&
+        <>
+          <button onClick={() => setEdit(true)}>Edit Comment</button>
+          <button onClick={() => api.comments().delete(id)}>Delete Comment</button>
+        </>}
+    </div >
   );
 };
 
@@ -74,6 +90,8 @@ const Plan = (props) => {
       last_name={c.last_name}
       text={c.comment_text}
       id={c.comment_id}
+      friend_id={c.friend_id}
+      user_id={user_id}
     />
   ));
 
@@ -95,17 +113,19 @@ const Plan = (props) => {
 
   const deletePlan = () => {
     const check = window.confirm("Are you sure you want to delete this plan?");
-    check && api.plans().delete(plan_id);
+    if (check) {
+      api.plans().delete(plan_id).then(() => props.history.push('/'));
+    }
   }
 
   return (
     <PlanWrapper>
       <h1>{title}</h1>
-      {user_id === host_id && 
-      <>
-      <EditDeleteButton href={`/plan-form/edit/${plan_id}`}>Edit Plan</EditDeleteButton>
-      <EditDeleteButton href='/' onClick={() => deletePlan()}>Delete Plan</EditDeleteButton>
-      </>
+      {user_id === host_id &&
+        <>
+          <EditDeleteButton href={`/plan-form/edit/${plan_id}`}>Edit Plan</EditDeleteButton>
+          <EditDeleteButton href='#' onClick={() => deletePlan()}>Delete Plan</EditDeleteButton>
+        </>
       }
       <p>{host_name}</p>
       <p>When: {formatted_start}</p>
@@ -122,7 +142,7 @@ const Plan = (props) => {
       {Comments}
       <p>Leave a comment:</p>
       <input type="textarea" value={comment} onChange={(e) => setComment(e.target.value)} />
-      <button onClick={() => {addComment(comment)}}>Post Comment</button>
+      <button onClick={() => { addComment(comment) }}>Post Comment</button>
     </PlanWrapper>
   );
 };
