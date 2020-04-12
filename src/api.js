@@ -48,9 +48,11 @@ export default {
   availabilities() {
     return {
       getAll: () => axios.get(`${baseUrl}/availabilities`),
+      // used
       getForFriend: (friendId) =>
-        axios.get(`${baseUrl}/availabilities/${friendId}`),
+        axios.get(`${baseUrl}/availability/${friendId}`),
       create: (toCreate) => axios.post(`${baseUrl}/availability`, toCreate),
+      // used
       update: (id, toUpdate) =>
         axios.put(`${baseUrl}/availability/${id}`, toUpdate),
       delete: (id) => axios.delete(`${baseUrl}/availability/${id}`),
