@@ -19,7 +19,7 @@ const PlanCard = props => {
       <p>{host_name}</p>
       <p>When: {formatted_start}</p>
       <p>Lasts {duration}</p>
-      <a href={`/plans/${plan_id}`}>View plan</a>
+      <a href={`/plan/${plan_id}`}>View plan</a>
     </PlanCardWrapper>
   );
 };

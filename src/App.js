@@ -16,20 +16,20 @@ export const PageBody = styled.div`
 
 const renderPlan = (routerProps) => {
     const plan_id = routerProps.match.params.id;
-    return <Plan id={plan_id} user_id={user_id} />;
+    return <Plan history={routerProps.history} id={plan_id} user_id={user_id} />;
 }
 
 const renderPlanForm = (routerProps) => {
     const mode = routerProps.match.params.mode;
     const plan_id = routerProps.match.params.plan_id;
-    return <PlanForm plan_id={plan_id} mode={mode} user_id={user_id} />;
+    return <PlanForm history={routerProps.history}plan_id={plan_id} mode={mode} user_id={user_id} />;
 }
 const App = () => {
     return (
         <PageBody>
         <Switch>
             <Route exact path = '/' component={Home} />
-            <Route path = '/plans/:id' render={routerProps => renderPlan(routerProps)} />
+            <Route path = '/plan/:id' render={routerProps => renderPlan(routerProps)} />
             <Route path = '/plan-form/:mode/:plan_id?' render={routerProps => renderPlanForm(routerProps)} />
         </Switch>
         </PageBody>

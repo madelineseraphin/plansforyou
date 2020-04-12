@@ -22,6 +22,7 @@ const Home = () => {
   return (
     <>
       <h1>All plans</h1>
+      <a href='/plan-form/create'>Create a new plan</a>
       {Plans}
       <h1>My Availabilities</h1>
     </>

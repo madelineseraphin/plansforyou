@@ -9,6 +9,10 @@ const PlanWrapper = styled.div`
   border: solid 1px black;
 `;
 
+const EditDeleteButton = styled.a`
+  margin-left: 15px;
+`;
+
 const RSVP = (props) => {
   const { first_name, rsvp_status, id } = props;
   return (
@@ -50,13 +54,13 @@ const Plan = (props) => {
   const planRsvps = planObject.rsvps;
   const userRsvp = planRsvps.find((r) => r.friend_id = user_id);
   const planComments = planObject.comments;
-  const { title, host_name, start_time, end_time, plan_photo, plan_id } = planInfo;
+  const { title, host_name, start_time, end_time, description_text, plan_photo, plan_id, host_id } = planInfo;
   const formatted_start = moment(start_time).format(formatString);
   const duration = moment
     .duration(moment(end_time) - moment(start_time))
     .humanize();
 
-  const RSVPs = planRsvps.map((rsvp) => (
+  const RSVPs = planRsvps && planRsvps.map((rsvp) => (
     <RSVP
       first_name={rsvp.first_name}
       rsvp_status={rsvp.rsvp_status}
@@ -64,7 +68,7 @@ const Plan = (props) => {
     />
   ));
 
-  const Comments = planComments.map((c) => (
+  const Comments = planComments && planComments.map((c) => (
     <Comment
       first_name={c.first_name}
       last_name={c.last_name}
@@ -89,12 +93,24 @@ const Plan = (props) => {
     api.comments().create(comment);
   };
 
+  const deletePlan = () => {
+    const check = window.confirm("Are you sure you want to delete this plan?");
+    check && api.plans().delete(plan_id);
+  }
+
   return (
     <PlanWrapper>
       <h1>{title}</h1>
+      {user_id === host_id && 
+      <>
+      <EditDeleteButton href={`/plan-form/edit/${plan_id}`}>Edit Plan</EditDeleteButton>
+      <EditDeleteButton href='/' onClick={() => deletePlan()}>Delete Plan</EditDeleteButton>
+      </>
+      }
       <p>{host_name}</p>
       <p>When: {formatted_start}</p>
       <p>Lasts {duration}</p>
+      <p>Description: {description_text}</p>
       <select id="rsvp_select" value={userRsvp ? userRsvp.status : "n/a"} onChange={(event) => onRSVPSelect(event.target.value)}>
         <option value="going">going</option>
         <option value="maybe">maybe</option>
