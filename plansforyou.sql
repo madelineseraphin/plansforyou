@@ -183,6 +183,7 @@ CREATE PROCEDURE create_plan(title varchar(45), description_text varchar(280), p
 		END IF;
         CALL get_plan(last_insert_id());
 	END //
+    
 DELIMITER ;
 
 -- Update plan (plan_id, new plan values)
@@ -246,7 +247,7 @@ DELIMITER ;
  DELIMITER //
  CREATE TRIGGER host_rsvp AFTER INSERT ON plan FOR EACH ROW
 	BEGIN
-		CALL update_rsvp(NEW.host_id, NEW.plan_id, 'going');
+		INSERT INTO rsvp VALUES (NEW.host_id, NEW.plan_id, 'going');
     END //
 
 DELIMITER ;
