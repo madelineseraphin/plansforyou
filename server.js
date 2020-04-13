@@ -1,7 +1,7 @@
 const express = require('express');
 var mysqlx = require('@mysql/xdevapi');
 require('dotenv').config();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 8000;
 const app = express();
 const bodyParser = require('body-parser');
 let connection;
@@ -314,7 +314,7 @@ app.route('/availability/:availabilityId').put(function(req, res, next) {
     }
 });
 
-// Delete comment
+// Delete availability
 app.route('/availability/:availabilityId').delete(function(req, res, next) {
     const q = 'CALL delete_availability(' + req.params.availabilityId + ');';
     return connection.sql(q).execute().then(result => {
@@ -324,4 +324,4 @@ app.route('/availability/:availabilityId').delete(function(req, res, next) {
 
 app.get('/status', (req, res) => res.send('Working!'));
 
-app.listen(port, () => console.log("Example app listening on port 3000!"));
+app.listen(port, () => console.log(`Example app listening on port ${port}!`));
