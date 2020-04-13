@@ -20,8 +20,11 @@ export default {
   },
   friends() {
     return {
+      // used
       getOne: (id) => axios.get(`${baseUrl}/friend/${id}`),
+      // used
       getAll: () => axios.get(`${baseUrl}/friends`),
+      // used
       create: (toCreate) => axios.post(`${baseUrl}/friend`, toCreate),
       update: (toUpdate, id) => axios.put(`${baseUrl}/friend/${id}`, toUpdate),
       delete: (id) => axios.delete(`${baseUrl}/friend/${id}`),
@@ -51,10 +54,12 @@ export default {
       // used
       getForFriend: (friendId) =>
         axios.get(`${baseUrl}/availability/${friendId}`),
+      // used
       create: (toCreate) => axios.post(`${baseUrl}/availability`, toCreate),
       // used
       update: (id, toUpdate) =>
         axios.put(`${baseUrl}/availability/${id}`, toUpdate),
+      // used
       delete: (id) => axios.delete(`${baseUrl}/availability/${id}`),
     };
   },

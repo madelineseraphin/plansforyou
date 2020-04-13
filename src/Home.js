@@ -4,8 +4,8 @@ import PlanCard from "./components/PlanCard"
 import api from './api'
 import Availabilities from './components/Availabilities';
 
-const Home = () => {
-  const user_id = 1;
+const Home = (props) => {
+  const user_id = props.location.state.user_id;
   const [plans, setPlans] = useState([]);
   useEffect(() => {
     api.plans().getAll().then((res) => setPlans(res.data));
@@ -15,11 +15,11 @@ const Home = () => {
 
   return (
     <>
-      <h1>All plans</h1>
-      <a href='/plan-form/create'>Create a new plan</a>
+      <h2>All plans</h2>
+      <a href={`/plan-form/create/${user_id}`}>Create a new plan</a>
       {Plans}
-      <h1>My Availabilities</h1>
-      <Availabilities user_id={user_id} editable={true}/>
+      <h2>My Availabilities</h2>
+      <Availabilities user_id={user_id} editable={true} />
     </>
   );
 }

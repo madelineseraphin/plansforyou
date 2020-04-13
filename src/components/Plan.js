@@ -24,7 +24,7 @@ const RSVP = (props) => {
 
 const Comment = (props) => {
   const { first_name, last_name, text, id, friend_id, user_id } = props;
-  const myComment = friend_id === user_id;
+  const myComment = friend_id == user_id;
   const [comment, setComment] = useState(text);
   const [edit, setEdit] = useState(false);
   return (
@@ -118,9 +118,17 @@ const Plan = (props) => {
     }
   }
 
+  const goHome = () => {
+    props.history.push({
+        pathname: '/home',
+        state: { user_id: user_id }
+    });
+};
+
   return (
     <PlanWrapper>
-      <h1>{title}</h1>
+      <button onClick={() => goHome()}>Back to homepage</button>
+      <h2>{title}</h2>
       {user_id === host_id &&
         <>
           <EditDeleteButton href={`/plan-form/edit/${plan_id}`}>Edit Plan</EditDeleteButton>
@@ -136,9 +144,9 @@ const Plan = (props) => {
         <option value="maybe">maybe</option>
         <option value="not going">not going</option>
       </select>
-      <h2>RSVPs</h2>
+      <h3>RSVPs</h3>
       {RSVPs}
-      <h2>Comments</h2>
+      <h3>Comments</h3>
       {Comments}
       <p>Leave a comment:</p>
       <input type="textarea" value={comment} onChange={(e) => setComment(e.target.value)} />
