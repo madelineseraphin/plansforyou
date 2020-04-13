@@ -129,25 +129,28 @@ const Plan = (props) => {
   const deletePlan = () => {
     const check = window.confirm("Are you sure you want to delete this plan?");
     if (check) {
-      api.plans().delete(plan_id).then(() => props.history.push('/'));
+      api.plans().delete(plan_id).then(() => props.history.push({
+        pathname: '/home',
+        state: { user_id: user_id }
+      }));
     }
   }
 
   const goHome = () => {
     props.history.push({
-        pathname: '/home',
-        state: { user_id: user_id }
+      pathname: '/home',
+      state: { user_id: user_id }
     });
-};
+  };
 
   return (
     <PlanWrapper>
       <PlanPhoto src={plan_photo} />
       <button onClick={() => goHome()}>Back to homepage</button>
       <h2>{title}</h2>
-      {user_id === host_id &&
+      {user_id == host_id &&
         <>
-          <EditDeleteButton href={`/plan-form/edit/${plan_id}`}>Edit Plan</EditDeleteButton>
+          <EditDeleteButton href={`/plan-form/edit/${user_id}/${plan_id}`}>Edit Plan</EditDeleteButton>
           <EditDeleteButton href='#' onClick={() => deletePlan()}>Delete Plan</EditDeleteButton>
         </>
       }

@@ -72,8 +72,7 @@ const PlanForm = props => {
     const editPlan = () => {
         if (plan.title && plan.description_text && plan.start_time && plan.end_time) {
             api.plans().update(plan, plan_id).then((res) => props.history.push({
-                pathname: `/plan/${plan_id}`,
-                state: { user_id: user_id }
+                pathname: `/plan/${plan_id}/${user_id}`
             }));
         }
     }
