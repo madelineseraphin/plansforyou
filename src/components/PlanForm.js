@@ -62,7 +62,7 @@ const PlanForm = props => {
         setPlan({ ...plan, end_time: moment(val).format('YYYY-MM-DD HH:mm:ss') });
     }
     const createPlan = () => {
-        if (plan.title && plan.description_text && plan.plan_photo && plan.start_time && plan.end_time) {
+        if (plan.title && plan.description_text && plan.start_time && plan.end_time) {
             api.plans().create(plan).then((res) => props.history.push({
                 pathname: '/home',
                 state: { user_id: user_id }
@@ -70,7 +70,7 @@ const PlanForm = props => {
         }
     }
     const editPlan = () => {
-        if (plan.title && plan.description_text && plan.plan_photo && plan.start_time && plan.end_time) {
+        if (plan.title && plan.description_text && plan.start_time && plan.end_time) {
             api.plans().update(plan, plan_id).then((res) => props.history.push({
                 pathname: `/plan/${plan_id}`,
                 state: { user_id: user_id }
