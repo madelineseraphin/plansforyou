@@ -13,6 +13,19 @@ const EditDeleteButton = styled.a`
   margin-left: 15px;
 `;
 
+const FriendPhoto = styled.img`
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  margin-right: 20px;
+`;
+
+const PlanPhoto = styled.img`
+  width: 100%;
+  max-height: 240px;
+  object-fit: cover;
+`;
+
 const RSVP = (props) => {
   const { first_name, rsvp_status, id } = props;
   return (
@@ -23,13 +36,14 @@ const RSVP = (props) => {
 };
 
 const Comment = (props) => {
-  const { first_name, last_name, text, id, friend_id, user_id } = props;
+  const { first_name, last_name, text, id, friend_id, user_id, friend_photo } = props;
   const myComment = friend_id == user_id;
   const [comment, setComment] = useState(text);
   const [edit, setEdit] = useState(false);
   return (
     <div key={id}>
       <p>
+        <FriendPhoto src={friend_photo} />
         <strong>{first_name} {last_name}</strong>
       </p>
       {edit ?
@@ -92,6 +106,7 @@ const Plan = (props) => {
       id={c.comment_id}
       friend_id={c.friend_id}
       user_id={user_id}
+      friend_photo={c.friend_photo}
     />
   ));
 
@@ -127,6 +142,7 @@ const Plan = (props) => {
 
   return (
     <PlanWrapper>
+      <PlanPhoto src={plan_photo} />
       <button onClick={() => goHome()}>Back to homepage</button>
       <h2>{title}</h2>
       {user_id === host_id &&

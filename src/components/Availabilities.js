@@ -13,13 +13,13 @@ const updateAvail = (data) => {
     const id = data.id;
     const start_time = moment(date[0]).format('YYYY-MM-DD HH:mm:ss');
     const end_time = moment(date[1]).format('YYYY-MM-DD HH:mm:ss');
-    api.availabilities().update(id, {start_time: start_time, end_time: end_time}).then((res) => console.log(res));
+    api.availabilities().update(id, {start_time: start_time, end_time: end_time}).then((res) => {});
 };
 
 const deleteAvail = (id) => {
     const check = window.confirm("Are you sure you want to delete this availability?");
     if (check) {
-        api.availabilities().delete(id).then((res) => console.log(res));
+        api.availabilities().delete(id).then((res) => {});
     }
 };
 
@@ -30,8 +30,7 @@ const addAvail = (user_id) => {
         end_time: date,
         friend_id: user_id
     }
-    console.log(newAvail);
-    api.availabilities().create(newAvail).then((res) => console.log(res));
+    api.availabilities().create(newAvail).then((res) => {});
 };
 
 const Avail = (props) => {
@@ -51,7 +50,7 @@ const Availabilities = (props) => {
     const [avails, setAvails] = useState([]);
     useEffect(() => {
         api.availabilities().getForFriend(user_id).then((res) => setAvails(res.data));
-    });
+    }, [user_id]);
 
     const Avails = avails && avails.map((a) => {
         return (<Avail

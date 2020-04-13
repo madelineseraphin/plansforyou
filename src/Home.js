@@ -11,10 +11,17 @@ const Home = (props) => {
     api.plans().getAll().then((res) => setPlans(res.data));
   }, []);
 
+  const [user, setUser] = useState({});
+
+  useEffect(() => {
+    api.friends().getOne(user_id).then((res) => res.data && setUser({name: res.data[0].first_name, id: res.data[0].friend_id}));
+  }, [user_id]);
+
   const Plans = plans.map((plan) => <PlanCard plan={plan} user_id={user_id} />);
 
   return (
     <>
+    <p>Logged in as <strong>{user.name}</strong>, user id is {user.id}</p>
       <h2>All plans</h2>
       <a href={`/plan-form/create/${user_id}`}>Create a new plan</a>
       {Plans}

@@ -63,14 +63,21 @@ const PlanForm = props => {
     }
     const createPlan = () => {
         if (plan.title && plan.description_text && plan.plan_photo && plan.start_time && plan.end_time) {
-            api.plans().create(plan).then((res) => props.history.push(`/home`));
+            api.plans().create(plan).then((res) => props.history.push({
+                pathname: '/home',
+                state: { user_id: user_id }
+            }));
         }
     }
     const editPlan = () => {
         if (plan.title && plan.description_text && plan.plan_photo && plan.start_time && plan.end_time) {
-            api.plans().update(plan, plan_id).then((res) => props.history.push(`/plan/${plan_id}`));
+            api.plans().update(plan, plan_id).then((res) => props.history.push({
+                pathname: `/plan/${plan_id}`,
+                state: { user_id: user_id }
+            }));
         }
     }
+
 
     const FriendAvailabilities = friends.map((f) => {
         return (<>
@@ -89,7 +96,7 @@ const PlanForm = props => {
     return (
         <Flex>
             <PlanFormWrapper>
-            <button onClick={() => goHome()}>Back to homepage</button>
+                <button onClick={() => goHome()}>Back to homepage</button>
                 <PlanFormTitle>{mode} a plan</PlanFormTitle>
                 <div>
                     <span>Plan title:</span><input type="text" value={plan.title} onChange={(e) => updateTitle(e.target.value)} />
